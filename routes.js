@@ -15,17 +15,12 @@ const router = new express.Router();
 router.get("/", async function (req, res, next) {
 
   const { search } = req.query;
-
   let customers;
 
   if (search) {
-
     customers = await Customer.search(search);
-
   } else {
-
     customers = await Customer.all();
-
   }
 
   return res.render("customer_list.html", { customers });
@@ -35,6 +30,17 @@ router.get("/", async function (req, res, next) {
 
 router.get("/add/", async function (req, res, next) {
   return res.render("customer_new_form.html");
+});
+
+
+/** Page to show top-ten customers by reservation count.*/
+
+router.get("/top-ten/", async function (req, res, next) {
+
+  const customers = await Customer.bestCustomers();
+
+  return res.render("customer_list.html", { customers });
+
 });
 
 /** Handle adding a new customer. */

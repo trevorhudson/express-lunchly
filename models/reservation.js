@@ -40,7 +40,9 @@ class Reservation {
     return results.rows.map(row => new Reservation(row));
   }
 
-  /** save this reservation. */
+  /** save this reservation.
+   * Adds a new reservation, or updates a current reservation.
+  */
 
   async save() {
     if (this.id === undefined) {
@@ -54,11 +56,10 @@ class Reservation {
     } else {
       await db.query(
         `UPDATE reservations
-             SET customer_id=$1,
-             num_guests=$2,
-             start_at=$3,
-             notes=$4
-             WHERE id = $5`, [
+            SET num_guests=$2,
+                start_at=$3,
+                notes=$4
+            WHERE id = $5`, [
         this.customerId,
         this.numGuests,
         this.startAt,

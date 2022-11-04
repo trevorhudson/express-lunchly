@@ -16,7 +16,9 @@ class Customer {
     this.notes = notes;
   }
 
-  /** find all customers. */
+  /** find all customers.
+   * Returns array of Customer instances.
+  */
 
   static async all() {
     const results = await db.query(
@@ -31,7 +33,10 @@ class Customer {
     return results.rows.map(c => new Customer(c));
   }
 
-  /** search for customer based on name */
+  /** search for customers based on first name or last name.
+   * Returns all matching
+   * customers as an array of Customer instances.
+   */
 
   static async search(name) {
     const results = await db.query(
@@ -41,14 +46,17 @@ class Customer {
                   phone,
                   notes
            FROM customers
-           WHERE first_name ILIKE $1
-           OR last_name ILIKE $1
+           WHERE concat( first_name, ' ', last_name ) ILIKE $1
            ORDER BY last_name, first_name`,
-           [name]
+      [`%${name}%`]
     );
+
     return results.rows.map(c => new Customer(c));
   }
-  /** get a customer by ID. */
+
+  /** get a customer by ID.
+   * Returns a Customer instance.
+  */
 
   static async get(id) {
     const results = await db.query(
@@ -70,8 +78,6 @@ class Customer {
       throw err;
     }
 
-
-
     return new Customer(customer);
   }
 
@@ -84,15 +90,17 @@ class Customer {
     return `${this.firstName} ${this.lastName}`;
   }
 
-
-
-  /** get all reservations for this customer. */
+  /** get all reservations for this customer.
+   * Returns array of Reservation instances.
+  */
 
   async getReservations() {
     return await Reservation.getReservationsForCustomer(this.id);
   }
 
-  /** save this customer. */
+  /** save this customer.
+   * Adds a new customer to database, or updates a current customer.
+  */
 
   async save() {
     if (this.id === undefined) {
@@ -121,20 +129,23 @@ class Customer {
     }
   }
 
-  /** get top ten best customers. Join lunchly, customers
-   * on id and customer id, group by customer id as count,
-   * order by count limit 10
+  /** get top ten best customers.
+   * Returns array of Customer instances.
    */
   static async bestCustomers() {
     const results = await db.query(
-      `SELECT id,
-                  first_name AS "firstName",
-                  last_name  AS "lastName",
-                  phone,
-                  notes
-           FROM customers
-           ORDER BY ,
-    );
+      `SELECT c.id,
+              c.first_name AS "firstName",
+              c.last_name  AS "lastName",
+              c.phone,
+              c.notes,
+              count(r.id) AS "reservations"
+      FROM customers AS c
+        JOIN reservations AS r
+        ON c.id = r.customer_id
+      GROUP BY c.id
+      ORDER BY count(r.id) DESC, c.last_name, c.first_name
+      LIMIT 10;`);
     return results.rows.map(c => new Customer(c));
   }
 }
