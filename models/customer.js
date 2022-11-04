@@ -8,12 +8,16 @@ const Reservation = require("./reservation");
 /** Customer of the restaurant. */
 
 class Customer {
-  constructor({ id, firstName, lastName, phone, notes }) {
+  constructor({ id, firstName, lastName, phone, notes = _notes }) {
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
     this.phone = phone;
     this.notes = notes;
+  }
+
+  get _notes() {
+    return '';
   }
 
   /** find all customers.
@@ -69,8 +73,8 @@ class Customer {
            WHERE id = $1`,
       [id],
     );
-
     const customer = results.rows[0];
+    console.log(customer.fullName);
 
     if (customer === undefined) {
       const err = new Error(`No such customer: ${id}`);
@@ -86,7 +90,7 @@ class Customer {
    * Returns {full name} of customer from {firstName} {lastName}
    */
 
-  fullName() {
+  get fullName() {
     return `${this.firstName} ${this.lastName}`;
   }
 
