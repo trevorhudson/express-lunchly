@@ -16,8 +16,13 @@ class Customer {
     this.notes = notes;
   }
 
-  get _notes() {
-    return '';
+  /** Get set patterns to prevent null values */
+  set notes(value) {
+    this._notes = value || "";
+  }
+
+  get notes() {
+    return this._notes;
   }
 
   /** find all customers.

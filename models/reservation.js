@@ -6,6 +6,8 @@ const moment = require("moment");
 
 const db = require("../db");
 
+const { BadRequestError } = require("../expressError");
+
 /** A reservation for a party */
 
 class Reservation {
@@ -16,6 +18,45 @@ class Reservation {
     this.startAt = startAt;
     this.notes = notes;
   }
+
+  /** Get set patterns to prevent null values */
+  set notes(value) {
+    this._notes = value || "";
+  }
+
+  get notes() {
+    return this._notes;
+  }
+
+  /** Get set pattern to prevent fewer than one person for reservations*/
+  set numGuests(value) {
+
+    if (!value) throw new BadRequestError("Guest amount must be one or more");
+
+    else {
+      this._numGuests = value; // underscore means its an internal detail
+    }
+
+  }
+
+  get numGuests() {
+
+    return this._numGuests;
+  }
+  // Library Moments - Read their docs
+  /** Get set pattern to validate date for reservation*/
+  set resDate(date) {
+
+    if (!(date instanceof Date)) {
+      throw new BadRequestError("Date format is not valid.");
+    } else {
+      this._resDate = date;
+    }
+  }
+  get resDate() {
+    return this._resDate;
+  }
+
 
   /** formatter for startAt */
 
@@ -39,6 +80,8 @@ class Reservation {
 
     return results.rows.map(row => new Reservation(row));
   }
+
+
 
   /** save this reservation.
    * Adds a new reservation, or updates a current reservation.
